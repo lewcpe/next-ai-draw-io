@@ -37,7 +37,7 @@ import {
 } from "@/lib/langfuse"
 import { findServerModelById } from "@/lib/server-model-config"
 import { getSystemPrompt } from "@/lib/system-prompts"
-import { getUserIdFromRequest } from "@/lib/user-id"
+import { getLLMUserHeaders, getUserIdFromRequest } from "@/lib/user-id"
 
 export const maxDuration = 120
 
@@ -244,10 +244,16 @@ async function handleChatRequest(req: Request): Promise<Response> {
     const {
         model,
         providerOptions,
-        headers,
+        headers: modelHeaders,
         modelId,
         provider: resolvedProvider,
     } = getAIModel(clientOverrides)
+
+    // Merge model headers with LLM user identification headers
+    const headers = {
+        ...modelHeaders,
+        ...getLLMUserHeaders(req),
+    }
 
     // Check if model supports prompt caching
     const shouldCache = supportsPromptCaching(modelId)

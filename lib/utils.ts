@@ -15,9 +15,9 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Minimum length for a "real" diagram XML (not just empty template).
- * Empty mxfile templates are ~147-300 chars; real diagrams are larger.
+ * Empty mxfile templates are ~147-160 chars; real diagrams are larger.
  */
-export const MIN_REAL_DIAGRAM_LENGTH = 300
+export const MIN_REAL_DIAGRAM_LENGTH = 200
 
 /**
  * Check if diagram XML represents a real diagram (not just empty template).

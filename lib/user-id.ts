@@ -10,3 +10,19 @@ export function getUserIdFromRequest(req: Request): string {
         ? rawIp
         : `user-${Buffer.from(rawIp).toString("base64url")}`
 }
+
+/**
+ * Get headers to forward to LLM for user identification.
+ * Configurable via USER_ID_HEADER and LLM_USER_ID_HEADER env vars.
+ */
+export function getLLMUserHeaders(req: Request): Record<string, string> {
+    const userIdHeader = process.env.USER_ID_HEADER || "X-Forwarded-Email"
+    const llmUserIdHeader =
+        process.env.LLM_USER_ID_HEADER || "X-OpenWebUI-User-Id"
+
+    const userId = req.headers.get(userIdHeader)
+    if (userId) {
+        return { [llmUserIdHeader]: userId }
+    }
+    return {}
+}
