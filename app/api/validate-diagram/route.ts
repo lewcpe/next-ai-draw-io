@@ -5,6 +5,7 @@
 
 import { streamObject } from "ai"
 import { getValidationModel } from "@/lib/ai-providers"
+import { getLLMUserHeaders } from "@/lib/user-id"
 import { VALIDATION_SYSTEM_PROMPT } from "@/lib/validation-prompts"
 import {
     type ValidationResult,
@@ -97,6 +98,7 @@ export async function POST(req: Request): Promise<Response> {
             model,
             schema: ValidationResultSchema,
             system: VALIDATION_SYSTEM_PROMPT,
+            headers: getLLMUserHeaders(req),
             messages: [
                 {
                     role: "user",

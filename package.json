@@ -5,7 +5,8 @@
     "private": true,
     "main": "dist-electron/main/index.js",
     "scripts": {
-        "dev": "next dev --turbopack --port 6002",
+        "dev": "concurrently \"next dev --turbopack --port 6002\" \"tsx dev-proxy.ts\"",
+        "dev:proxy": "tsx dev-proxy.ts",
         "build": "next build",
         "start": "next start --port 6001",
         "lint": "biome lint .",
@@ -135,6 +136,7 @@
         "lint-staged": "^16.2.7",
         "shx": "^0.4.0",
         "tailwindcss": "^4",
+        "tsx": "^4.19.3",
         "typescript": "^5",
         "vite-tsconfig-paths": "^6.0.3",
         "vitest": "^4.0.16",

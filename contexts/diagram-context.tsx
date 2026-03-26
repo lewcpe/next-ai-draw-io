@@ -109,8 +109,8 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
     // Get current diagram as SVG for thumbnail (used by session storage)
     const getThumbnailSvg = async (): Promise<string | null> => {
         if (!drawioRef.current) return null
-        // Don't export if diagram is empty
-        if (!isRealDiagram(chartXML)) return null
+        // Use chartXMLRef instead of state to avoid stale closure during rapid updates
+        if (!isRealDiagram(chartXMLRef.current)) return null
 
         try {
             const svgData = await Promise.race([
@@ -138,8 +138,8 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
     // Capture current diagram as PNG for VLM validation
     const captureValidationPng = async (): Promise<string | null> => {
         if (!drawioRef.current) return null
-        // Don't export if diagram is empty
-        if (!isRealDiagram(chartXML)) return null
+        // Use chartXMLRef instead of state to avoid stale closure during rapid updates
+        if (!isRealDiagram(chartXMLRef.current)) return null
 
         try {
             const pngData = await Promise.race([
@@ -194,6 +194,8 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
 
         // Keep chartXML in sync even when diagrams are injected (e.g., display_diagram tool)
         setChartXML(xmlToLoad)
+        // Update Ref synchronously to ensure immediate use in export functions
+        chartXMLRef.current = xmlToLoad
 
         if (drawioRef.current) {
             drawioRef.current.load({
@@ -227,6 +229,8 @@ export function DiagramProvider({ children }: { children: React.ReactNode }) {
 
         const extractedXML = extractDiagramXML(data.data)
         setChartXML(extractedXML)
+        // Update Ref synchronously
+        chartXMLRef.current = extractedXML
         setLatestSvg(data.data)
 
         // Only add to history if this was a user-initiated export
