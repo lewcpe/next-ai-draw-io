@@ -8,10 +8,10 @@ import {
 const ORIGINAL_ENV = { ...process.env }
 
 afterEach(() => {
-    process.env.AI_PROVIDER = ORIGINAL_ENV.AI_PROVIDER
-    process.env.AI_MODEL = ORIGINAL_ENV.AI_MODEL
-    process.env.AI_MODELS_CONFIG_PATH = ORIGINAL_ENV.AI_MODELS_CONFIG_PATH
-    process.env.AI_MODELS_CONFIG = ORIGINAL_ENV.AI_MODELS_CONFIG
+    if (ORIGINAL_ENV.AI_PROVIDER === undefined) delete process.env.AI_PROVIDER; else process.env.AI_PROVIDER = ORIGINAL_ENV.AI_PROVIDER;
+    if (ORIGINAL_ENV.AI_MODEL === undefined) delete process.env.AI_MODEL; else process.env.AI_MODEL = ORIGINAL_ENV.AI_MODEL;
+    if (ORIGINAL_ENV.AI_MODELS_CONFIG_PATH === undefined) delete process.env.AI_MODELS_CONFIG_PATH; else process.env.AI_MODELS_CONFIG_PATH = ORIGINAL_ENV.AI_MODELS_CONFIG_PATH;
+    if (ORIGINAL_ENV.AI_MODELS_CONFIG === undefined) delete process.env.AI_MODELS_CONFIG; else process.env.AI_MODELS_CONFIG = ORIGINAL_ENV.AI_MODELS_CONFIG;
 })
 
 describe("ServerModelsConfigSchema", () => {
@@ -167,5 +167,22 @@ describe("loadFlattenedServerModels", () => {
 
         expect(models.length).toBe(1)
         expect(models[0].apiKeyEnv).toEqual(["OPENAI_KEY_1", "OPENAI_KEY_2"])
+    })
+})
+
+// Add the new test manually
+describe("loadFlattenedServerModels Fallback", () => {
+    it("generates fallback config when AI_MODEL is a comma-separated list", async () => {
+        process.env.AI_MODELS_CONFIG_PATH = `non-existent-config-${Date.now()}.json`
+        delete process.env.AI_MODELS_CONFIG
+        process.env.AI_MODEL = "model-1, model-2"
+        process.env.AI_PROVIDER = "openai"
+
+        const models = await loadFlattenedServerModels()
+        expect(models).toHaveLength(2)
+        expect(models[0].modelId).toBe("model-1")
+        expect(models[0].isDefault).toBe(true)
+        expect(models[1].modelId).toBe("model-2")
+        expect(models[1].isDefault).toBe(false)
     })
 })
