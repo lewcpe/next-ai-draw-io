@@ -565,7 +565,7 @@ const PROVIDER_ENV_VARS: Record<ProviderName, string | null> = {
  * Auto-detect provider based on available API keys
  * Returns the provider if exactly one is configured, otherwise null
  */
-function detectProvider(): ProviderName | null {
+export function detectProvider(): ProviderName | null {
     const configuredProviders: ProviderName[] = []
 
     for (const [provider, envVar] of Object.entries(PROVIDER_ENV_VARS)) {
@@ -690,7 +690,8 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
     )
 
     // Use client override if provided, otherwise fall back to env vars
-    const modelId = overrides?.modelId || process.env.AI_MODEL
+    const rawModelId = overrides?.modelId || process.env.AI_MODEL
+    const modelId = rawModelId?.split(",")[0].trim()
 
     if (!modelId) {
         if (isClientOverride) {
@@ -1385,7 +1386,8 @@ export function supportsImageInput(modelId: string): boolean {
  * Throws if the model doesn't support image input.
  */
 export function getValidationModel(): ReturnType<typeof getAIModel>["model"] {
-    const modelId = process.env.VALIDATION_MODEL || process.env.AI_MODEL
+    const rawModelId = process.env.VALIDATION_MODEL || process.env.AI_MODEL
+    const modelId = rawModelId?.split(",")[0].trim()
 
     if (!modelId) {
         throw new Error(

@@ -3,6 +3,7 @@ import path from "path"
 import { z } from "zod"
 import type { ProviderName } from "@/lib/types/model-config"
 import { PROVIDER_INFO } from "@/lib/types/model-config"
+import { detectProvider } from "./ai-providers"
 
 export const ProviderNameSchema: z.ZodType<ProviderName> = z
     .string()
@@ -99,11 +100,36 @@ export async function loadRawServerModelsConfig(): Promise<ServerModelsConfig | 
 export async function loadFlattenedServerModels(): Promise<
     FlattenedServerModel[]
 > {
-    const cfg = await loadRawServerModelsConfig()
-    if (!cfg) return []
+    let cfg = await loadRawServerModelsConfig()
 
     const defaultProvider = process.env.AI_PROVIDER as ProviderName | undefined
-    const defaultModelId = process.env.AI_MODEL
+    const defaultModelIdEnv = process.env.AI_MODEL
+
+    if (!cfg && defaultModelIdEnv) {
+        const provider = defaultProvider || detectProvider()
+        if (provider) {
+            const models = defaultModelIdEnv
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean)
+            if (models.length > 0) {
+                cfg = {
+                    providers: [
+                        {
+                            name: PROVIDER_INFO[provider]?.label || provider,
+                            provider: provider,
+                            models: models,
+                            default: true,
+                        },
+                    ],
+                }
+            }
+        }
+    }
+
+    if (!cfg) return []
+
+    const defaultModelId = defaultModelIdEnv?.split(",")[0].trim()
 
     const flattened: FlattenedServerModel[] = []
 
