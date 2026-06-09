@@ -108,7 +108,10 @@ export async function loadFlattenedServerModels(): Promise<
     if (!cfg && defaultModelIdEnv) {
         const provider = defaultProvider || detectProvider()
         if (provider) {
-            const models = defaultModelIdEnv.split(',').map(m => m.trim()).filter(Boolean)
+            const models = defaultModelIdEnv
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean)
             if (models.length > 0) {
                 cfg = {
                     providers: [
@@ -126,7 +129,7 @@ export async function loadFlattenedServerModels(): Promise<
 
     if (!cfg) return []
 
-    const defaultModelId = defaultModelIdEnv?.split(',')[0].trim()
+    const defaultModelId = defaultModelIdEnv?.split(",")[0].trim()
 
     const flattened: FlattenedServerModel[] = []
 

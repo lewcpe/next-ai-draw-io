@@ -691,7 +691,7 @@ export function getAIModel(overrides?: ClientOverrides): ModelConfig {
 
     // Use client override if provided, otherwise fall back to env vars
     const rawModelId = overrides?.modelId || process.env.AI_MODEL
-    const modelId = rawModelId?.split(',')[0].trim()
+    const modelId = rawModelId?.split(",")[0].trim()
 
     if (!modelId) {
         if (isClientOverride) {
@@ -1387,7 +1387,7 @@ export function supportsImageInput(modelId: string): boolean {
  */
 export function getValidationModel(): ReturnType<typeof getAIModel>["model"] {
     const rawModelId = process.env.VALIDATION_MODEL || process.env.AI_MODEL
-    const modelId = rawModelId?.split(',')[0].trim()
+    const modelId = rawModelId?.split(",")[0].trim()
 
     if (!modelId) {
         throw new Error(

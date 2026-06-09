@@ -8,10 +8,16 @@ import {
 const ORIGINAL_ENV = { ...process.env }
 
 afterEach(() => {
-    if (ORIGINAL_ENV.AI_PROVIDER === undefined) delete process.env.AI_PROVIDER; else process.env.AI_PROVIDER = ORIGINAL_ENV.AI_PROVIDER;
-    if (ORIGINAL_ENV.AI_MODEL === undefined) delete process.env.AI_MODEL; else process.env.AI_MODEL = ORIGINAL_ENV.AI_MODEL;
-    if (ORIGINAL_ENV.AI_MODELS_CONFIG_PATH === undefined) delete process.env.AI_MODELS_CONFIG_PATH; else process.env.AI_MODELS_CONFIG_PATH = ORIGINAL_ENV.AI_MODELS_CONFIG_PATH;
-    if (ORIGINAL_ENV.AI_MODELS_CONFIG === undefined) delete process.env.AI_MODELS_CONFIG; else process.env.AI_MODELS_CONFIG = ORIGINAL_ENV.AI_MODELS_CONFIG;
+    if (ORIGINAL_ENV.AI_PROVIDER === undefined) delete process.env.AI_PROVIDER
+    else process.env.AI_PROVIDER = ORIGINAL_ENV.AI_PROVIDER
+    if (ORIGINAL_ENV.AI_MODEL === undefined) delete process.env.AI_MODEL
+    else process.env.AI_MODEL = ORIGINAL_ENV.AI_MODEL
+    if (ORIGINAL_ENV.AI_MODELS_CONFIG_PATH === undefined)
+        delete process.env.AI_MODELS_CONFIG_PATH
+    else process.env.AI_MODELS_CONFIG_PATH = ORIGINAL_ENV.AI_MODELS_CONFIG_PATH
+    if (ORIGINAL_ENV.AI_MODELS_CONFIG === undefined)
+        delete process.env.AI_MODELS_CONFIG
+    else process.env.AI_MODELS_CONFIG = ORIGINAL_ENV.AI_MODELS_CONFIG
 })
 
 describe("ServerModelsConfigSchema", () => {
