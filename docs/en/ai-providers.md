@@ -61,10 +61,32 @@ Optional custom endpoint (for OpenAI-compatible services):
 OPENAI_BASE_URL=https://your-custom-endpoint/v1
 ```
 
+### AIHubMix
+
+AIHubMix provides access to Claude, GPT, Gemini, DeepSeek, and other models through a single API key.
+
+```bash
+AIHUBMIX_API_KEY=your_api_key
+AI_MODEL=claude-sonnet-4-5-20250929
+```
+
+Optional custom endpoint:
+
+```bash
+AIHUBMIX_BASE_URL=https://aihubmix.com/v1
+```
+
 ### Anthropic
 
 ```bash
 ANTHROPIC_API_KEY=your_api_key
+AI_MODEL=claude-sonnet-4-5-20250514
+```
+
+Or use a Bearer auth token instead of an API key (e.g. when going through a gateway that issues OAuth-style tokens). `ANTHROPIC_AUTH_TOKEN` is sent as `Authorization: Bearer <token>`, while `ANTHROPIC_API_KEY` is sent as `x-api-key`. The two are mutually exclusive — set only one:
+
+```bash
+ANTHROPIC_AUTH_TOKEN=your_auth_token
 AI_MODEL=claude-sonnet-4-5-20250514
 ```
 
@@ -230,7 +252,7 @@ MiniMax supports two API formats:
 
 ```bash
 MINIMAX_API_KEY=your_api_key
-AI_MODEL=MiniMax-M2.7
+AI_MODEL=MiniMax-M3
 ```
 
 Optional configuration:
@@ -301,6 +323,19 @@ Optional custom endpoint:
 QINIU_BASE_URL=https://your-custom-endpoint
 ```
 
+### MiMo (Xiaomi)
+
+```bash
+MIMO_API_KEY=your_api_key
+AI_MODEL=mimo-v2.5-pro
+```
+
+Optional custom endpoint (Token Plan subscribers should set their dedicated Base URL):
+
+```bash
+MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
+```
+
 ## Auto-Detection
 
 If you only configure **one** provider's API key, the system will automatically detect and use that provider. No need to set `AI_PROVIDER`.
@@ -308,7 +343,7 @@ If you only configure **one** provider's API key, the system will automatically 
 If you configure **multiple** API keys, you must explicitly set `AI_PROVIDER`:
 
 ```bash
-AI_PROVIDER=google  # or: openai, anthropic, deepseek, siliconflow, doubao, azure, bedrock, openrouter, ollama, gateway, sglang, modelscope, minimax, glm, qwen, kimi, qiniu
+AI_PROVIDER=google  # or: openai, anthropic, aihubmix, deepseek, siliconflow, doubao, azure, bedrock, openrouter, ollama, gateway, sglang, modelscope, minimax, glm, qwen, kimi, qiniu, mimo
 ```
 
 ## Server-Side Multi-Model Configuration
@@ -328,6 +363,17 @@ AI_MODELS_CONFIG='{"providers":[{"name":"OpenAI","provider":"openai","models":["
 **Option 2: Config File**
 
 Create an `ai-models.json` file in the project root (or set `AI_MODELS_CONFIG_PATH` to a custom location).
+
+**Option 3: Comma-separated `AI_MODEL`** (quick setup, single provider)
+
+If you only need multiple models from one provider, list them in `AI_MODEL` separated by commas. The first model is treated as the default.
+
+```bash
+AI_PROVIDER=doubao
+AI_MODEL=doubao-seed-1-8-251215,doubao-seed-1-6-flash,doubao-seed-1-6-pro
+```
+
+This is shorthand for the equivalent `ai-models.json`. For multiple providers or custom `apiKeyEnv` / `baseUrlEnv`, use Option 1 or 2 instead.
 
 ### Example Configuration
 
