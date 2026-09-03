@@ -10,8 +10,8 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { useDiagram } from "@/contexts/diagram-context"
+import { type DrawioTheme, isDrawioTheme } from "@/lib/drawio-themes"
 import { i18n, type Locale } from "@/lib/i18n/config"
-import { isIndexedDBUsable } from "@/lib/session-storage"
 
 export default function Home() {
     const {
@@ -27,13 +27,11 @@ export default function Home() {
     const currentLang = (pathname.split("/")[1] || i18n.defaultLocale) as Locale
     const [isMobile, setIsMobile] = useState(false)
     const [isChatVisible, setIsChatVisible] = useState(true)
-    const [drawioUi, setDrawioUi] = useState<"min" | "sketch">("min")
+    const [drawioUi, setDrawioUi] = useState<DrawioTheme>("kennedy")
     const [darkMode, setDarkMode] = useState(false)
     const [isLoaded, setIsLoaded] = useState(false)
     const [isDrawioReady, setIsDrawioReady] = useState(false)
     const [isElectron, setIsElectron] = useState(false)
-    const [canPersist, setCanPersist] = useState(false)
-    const [canPersistChecked, setCanPersistChecked] = useState(false)
     const [drawioBaseUrl, setDrawioBaseUrl] = useState(
         process.env.NEXT_PUBLIC_DRAWIO_BASE_URL || "https://embed.diagrams.net",
     )
@@ -56,7 +54,7 @@ export default function Home() {
         }
 
         const savedUi = localStorage.getItem("drawio-theme")
-        if (savedUi === "min" || savedUi === "sketch") {
+        if (isDrawioTheme(savedUi)) {
             setDrawioUi(savedUi)
         }
 
@@ -84,11 +82,6 @@ export default function Home() {
             setDrawioBaseUrl(`${window.location.origin}/drawio/index.html`)
         }
 
-        void (async () => {
-            const usable = await isIndexedDBUsable()
-            setCanPersist(usable)
-            setCanPersistChecked(true)
-        })()
         setIsLoaded(true)
     }, [pathname, router])
 
@@ -96,13 +89,6 @@ export default function Home() {
         setIsDrawioReady(true)
         onDrawioLoad()
     }, [onDrawioLoad])
-
-    const handleDrawioAutoSave = useCallback(
-        (data: { xml?: string }) => {
-            handleDiagramAutoSave(data)
-        },
-        [handleDiagramAutoSave],
-    )
 
     const handleDarkModeChange = () => {
         const newValue = !darkMode
@@ -113,10 +99,9 @@ export default function Home() {
         resetDrawioReady()
     }
 
-    const handleDrawioUiChange = () => {
-        const newUi = drawioUi === "min" ? "sketch" : "min"
-        localStorage.setItem("drawio-theme", newUi)
-        setDrawioUi(newUi)
+    const handleDrawioUiChange = (theme: DrawioTheme) => {
+        localStorage.setItem("drawio-theme", theme)
+        setDrawioUi(theme)
         setIsDrawioReady(false)
         resetDrawioReady()
     }
@@ -187,7 +172,7 @@ export default function Home() {
                         }`}
                     >
                         <div className="h-full rounded-xl overflow-hidden shadow-soft-lg border border-border/30 relative">
-                            {isLoaded && canPersistChecked && (
+                            {isLoaded && (
                                 <div
                                     className={`h-full w-full ${isDrawioReady ? "" : "invisible absolute inset-0"}`}
                                 >
@@ -195,28 +180,19 @@ export default function Home() {
                                         key={`${drawioUi}-${darkMode}-${currentLang}-${isElectron}`}
                                         ref={drawioRef}
                                         autosave
-                                        onAutoSave={handleDrawioAutoSave}
+                                        onAutoSave={handleDiagramAutoSave}
                                         onExport={handleDiagramExport}
                                         onLoad={handleDrawioLoad}
                                         baseUrl={drawioBaseUrl}
-                                        configuration={
-                                            canPersist
-                                                ? { confirmExit: false }
-                                                : undefined
-                                        }
                                         urlParameters={{
                                             ui: drawioUi,
                                             spin: false,
                                             libraries: false,
-                                            // Disable modified tracking only when persistence is available
-                                            ...(canPersist && {
-                                                modified: false,
-                                                keepmodified: false,
-                                            }),
                                             saveAndExit: false,
                                             noSaveBtn: true,
                                             noExitBtn: true,
-                                            dark: darkMode,
+                                            dark:
+                                                darkMode || drawioUi === "dark",
                                             lang: currentLang,
                                             // Enable offline mode in Electron to disable external service calls
                                             ...(isElectron && {
@@ -264,7 +240,7 @@ export default function Home() {
                                 isVisible={isChatVisible}
                                 onToggleVisibility={toggleChatPanel}
                                 drawioUi={drawioUi}
-                                onToggleDrawioUi={handleDrawioUiChange}
+                                onDrawioUiChange={handleDrawioUiChange}
                                 darkMode={darkMode}
                                 onToggleDarkMode={handleDarkModeChange}
                                 isMobile={isMobile}

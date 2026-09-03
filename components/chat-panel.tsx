@@ -32,6 +32,7 @@ import { useSessionManager } from "@/hooks/use-session-manager"
 import { useValidateDiagram } from "@/hooks/use-validate-diagram"
 import { getApiEndpoint } from "@/lib/base-path"
 import { findCachedResponse } from "@/lib/cached-responses"
+import type { DrawioTheme } from "@/lib/drawio-themes"
 import { formatMessage } from "@/lib/i18n/utils"
 import { isPdfFile, isTextFile } from "@/lib/pdf-utils"
 import { sanitizeMessages } from "@/lib/session-storage"
@@ -68,8 +69,8 @@ interface ChatMessage {
 interface ChatPanelProps {
     isVisible: boolean
     onToggleVisibility: () => void
-    drawioUi: "min" | "sketch"
-    onToggleDrawioUi: () => void
+    drawioUi: DrawioTheme
+    onDrawioUiChange: (theme: DrawioTheme) => void
     darkMode: boolean
     onToggleDarkMode: () => void
     isMobile?: boolean
@@ -110,7 +111,7 @@ export default function ChatPanel({
     isVisible,
     onToggleVisibility,
     drawioUi,
-    onToggleDrawioUi,
+    onDrawioUiChange,
     darkMode,
     onToggleDarkMode,
     isMobile = false,
@@ -177,6 +178,7 @@ export default function ChatPanel({
     const [minimalStyle, setMinimalStyle] = useState(false)
     const [vlmValidationEnabled, setVlmValidationEnabled] = useState(false)
     const [customSystemMessage, setCustomSystemMessage] = useState("")
+    const [maxOutputTokens, setMaxOutputTokens] = useState("")
     const [shouldFocusInput, setShouldFocusInput] = useState(false)
 
     // Restore input from sessionStorage on mount (when ChatPanel remounts due to key change)
@@ -200,6 +202,14 @@ export default function ChatPanel({
         const stored = localStorage.getItem(STORAGE_KEYS.customSystemMessage)
         if (stored !== null) {
             setCustomSystemMessage(stored)
+        }
+    }, [])
+
+    // Load output token budget from localStorage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem(STORAGE_KEYS.maxOutputTokens)
+        if (stored !== null) {
+            setMaxOutputTokens(stored)
         }
     }, [])
 
@@ -317,6 +327,13 @@ export default function ChatPanel({
     const handleCustomSystemMessageChange = useCallback((value: string) => {
         setCustomSystemMessage(value)
         localStorage.setItem(STORAGE_KEYS.customSystemMessage, value)
+    }, [])
+
+    // Handler for output token budget change (empty string = use server default)
+    const handleMaxOutputTokensChange = useCallback((value: string) => {
+        const digitsOnly = value.replace(/\D/g, "")
+        setMaxOutputTokens(digitsOnly)
+        localStorage.setItem(STORAGE_KEYS.maxOutputTokens, digitsOnly)
     }, [])
 
     // Ref to store the sendMessage function for use in callbacks
@@ -829,10 +846,6 @@ export default function ChatPanel({
                 let chartXml = await onFetchChart()
                 chartXml = formatXML(chartXml)
 
-                // Update ref directly to avoid race condition with React's async state update
-                // This ensures edit_diagram has the correct XML before AI responds
-                chartXMLRef.current = chartXml
-
                 // Build user text by concatenating input with pre-extracted text
                 // (Backend only reads first text part, so we must combine them)
                 const parts: any[] = []
@@ -1106,6 +1119,9 @@ export default function ChatPanel({
                     }),
                     ...(minimalStyle && {
                         "x-minimal-style": "true",
+                    }),
+                    ...(maxOutputTokens && {
+                        "x-max-output-tokens": maxOutputTokens,
                     }),
                 },
             },
@@ -1442,7 +1458,7 @@ export default function ChatPanel({
                 open={showSettingsDialog}
                 onOpenChange={setShowSettingsDialog}
                 drawioUi={drawioUi}
-                onToggleDrawioUi={onToggleDrawioUi}
+                onDrawioUiChange={onDrawioUiChange}
                 darkMode={darkMode}
                 onToggleDarkMode={onToggleDarkMode}
                 minimalStyle={minimalStyle}
@@ -1451,6 +1467,8 @@ export default function ChatPanel({
                 onVlmValidationChange={handleVlmValidationChange}
                 customSystemMessage={customSystemMessage}
                 onCustomSystemMessageChange={handleCustomSystemMessageChange}
+                maxOutputTokens={maxOutputTokens}
+                onMaxOutputTokensChange={handleMaxOutputTokensChange}
                 onOpenModelConfig={() => setShowModelConfigDialog(true)}
             />
 
